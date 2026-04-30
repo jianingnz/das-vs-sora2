@@ -190,7 +190,7 @@
       <tr>
         <td class="row-label gt">GT <span style="color:var(--muted); font-size:14px; font-weight:400;">(reference)</span></td>
         <td class="metric"><span class="num">0.9785</span></td>
-        <td class="metric"><span class="num best">0.9626</span></td>
+        <td class="metric"><span class="num">0.9626</span></td>
       </tr>
       <tr>
         <td class="row-label das">DaS</td>
@@ -199,8 +199,8 @@
       </tr>
       <tr>
         <td class="row-label sora">Sora 2</td>
-        <td class="metric"><span class="num">0.9573</span><span class="delta">&minus;0.0212 vs GT</span></td>
-        <td class="metric"><span class="num">0.9551</span><span class="delta">&minus;0.0075 vs GT</span></td>
+        <td class="metric"><span class="num">0.9740</span><span class="delta">&minus;0.0045 vs GT</span></td>
+        <td class="metric"><span class="num best">0.9659</span><span class="delta">+0.0033 vs GT</span></td>
       </tr>
     </tbody>
   </table>
@@ -208,7 +208,13 @@
     <strong>Tem-Con</strong>: open_clip ViT-L-14 image embeddings, 8-frame uniform sample, mean cosine similarity over adjacent pairs.
     Higher = smoother/slower frame-to-frame change. &nbsp;&middot;&nbsp;
     <strong>Subj-Cons</strong>: VBench subject_consistency, DINO ViT-B/16 features (default protocol). Higher = more stable subject identity across frames.
-    Best generative score per metric highlighted in green. <em>n = 1</em> &mdash; single clip, no statistical claim.
+    Best <em>generative</em> score per metric highlighted in green. <em>n = 1</em> &mdash; single clip, no statistical claim.
+    <br><br>
+    <strong style="color:var(--good);">Note:</strong> Sora's Subj-Cons (0.9659) <em>exceeds</em> GT (0.9626) here. The bench-v3 prompt suffix
+    (<em>"keep the camera fairly static"</em>) locks Sora's camera harder than the real GT camera moves &mdash; eliminating
+    the natural parallax/shake that lowers GT's per-frame DINO consistency. With an earlier suffix wording
+    (<em>"small and smooth movement"</em>) Sora scored only 0.9551 / 0.9573 (Subj-Cons / Tem-Con); the strict camera lock improved both
+    by &gt;0.01.
   </div>
 </div>
 
@@ -249,7 +255,7 @@
     <h3>Pipeline parameters</h3>
     <div class="kv">
       <div class="k">caption</div>      <div class="v">"a brown bear walks to the left"</div>
-      <div class="k">prompt suffix</div><div class="v">v3 noobj (no new objects, no drastic camera move)</div>
+      <div class="k">prompt suffix</div><div class="v">". no new objects, people, or artifacts should be added to the scene. no camera large motions are allowed and keep the camera fairly static"</div>
       <div class="k">T_native</div>     <div class="v">82</div>
       <div class="k">F (native fps)</div><div class="v">24</div>
       <div class="k">target_fps</div>   <div class="v">24</div>
@@ -263,9 +269,11 @@
   </div>
   <div class="meta-card caveats">
     <h3>Caveats</h3>
-    <p><strong>n = 1.</strong> A single bear clip; no statistical claim. The 0.0001 gap on Subj-Cons between DaS and Sora is noise; only Tem-Con shows a meaningful gap.</p>
-    <p><strong>Sora pacing.</strong> Sora generated 4 s of bear walking; we trimmed to the first 2.04 s. The trimmed action reflects whatever pacing Sora chose across the full 4 s &mdash; if motion was back-loaded, we capture only setup motion. Eyeball the comparison to confirm.</p>
-    <p><strong>Sora 2 is 30 fps</strong>, not 24 as some docs claim. We probe the actual fps from the downloaded mp4 via cv2 and use it for the trim count (<code>round(D_target &times; sora_fps)</code>).</p>
+    <p><strong>n = 1.</strong> A single bear clip; no statistical claim. The metric gaps shown are illustrative, not statistically significant.</p>
+    <p><strong>Prompt iteration matters.</strong> The original v3 suffix (<em>"no drastic camera movement &hellip; only small and smooth movement"</em>) was permissive enough that Sora applied a slow dolly. The current suffix (<em>"no camera large motions are allowed and keep the camera fairly static"</em>) locks the camera, which raised Sora's Tem-Con +0.017 and Subj-Cons +0.011 on this clip.</p>
+    <p><strong>Sora pacing.</strong> Sora generated 4 s of bear walking; we trimmed to the first 2.04 s (<code>round(D_target &times; sora_fps)</code>). The trimmed action reflects Sora's pacing across the full 4 s &mdash; if motion is back-loaded we capture only setup motion. Eyeball the hero clip to confirm.</p>
+    <p><strong>Sora 2 is 30 fps</strong>, not 24 as some docs claim. We probe the actual fps from the downloaded mp4 via cv2 and use it for the trim count.</p>
+    <p><strong>DaS prompt asymmetry.</strong> The DaS bear smoke (existing reference) was generated 2026-04-28 with the <em>old</em> suffix; only Sora was rerun on the new suffix. A future DaS rerun under the new suffix would close this asymmetry.</p>
   </div>
 </div>
 
