@@ -76,9 +76,6 @@
   code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
   .ex-section { padding-top: 32px; border-top: 1px solid var(--border); margin-top: 56px; }
   .ex-section:first-of-type { border-top: none; padding-top: 0; margin-top: 24px; }
-  /* Force grid cards to share a row height so cards with different native aspects
-     line up; the videos themselves stay full-width object-fit: cover. */
-  .grid .card video, .grid .card img { aspect-ratio: 16 / 9; object-fit: cover; }
 </style>
 </head>
 <body>
@@ -206,7 +203,7 @@ PSNR/SSIM/LPIPS computed pixel-wise vs GT after upsampling DaS to GT res; t=0 sk
 <h3>Side-by-side outputs</h3>
 <div class="grid">
   <div class="card gt"><video src="videos/pred/gt.mp4" autoplay loop muted playsinline></video><div class="label">Ground Truth <span class="small">source[3:33] · 30 f @ 24 fps · 854×480</span></div></div>
-  <div class="card das"><video src="videos/pred/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">96 pts · T=30 interp→49 · 720×480 native</span></div></div>
+  <div class="card das"><video src="videos/pred/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">96 pts · T=30 interp→49 · 854×480 (GT res, upsampled from 720×480 native)</span></div></div>
   <div class="card sora"><video src="videos/pred/sora.mp4" autoplay loop muted playsinline></video><div class="label">Sora 2 <span class="small">frame3 + caption + suffix · 854×480</span></div></div>
 </div>
 
@@ -248,7 +245,7 @@ PSNR/SSIM/LPIPS computed pixel-wise vs GT after upsampling DaS to GT res; t=0 sk
 <h3>Side-by-side outputs</h3>
 <div class="grid">
   <div class="card gt"><video src="videos/pred_hot3d/gt.mp4" autoplay loop muted playsinline></video><div class="label">Ground Truth <span class="small">source[3:33] · 30 f @ 30 fps · 1408×1408</span></div></div>
-  <div class="card das"><video src="videos/pred_hot3d/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">64 pts · T=30 interp→49 · 720×480 native (upsampled to 1408² for metrics)</span></div></div>
+  <div class="card das"><video src="videos/pred_hot3d/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">64 pts · T=30 interp→49 · 1408×1408 (GT res, upsampled from 720×480 native)</span></div></div>
   <div class="card sora"><video src="videos/pred_hot3d/sora.mp4" autoplay loop muted playsinline></video><div class="label">Sora 2 <span class="small">frame3 + caption + suffix · 1408×1408</span></div></div>
 </div>
 
@@ -293,7 +290,7 @@ PSNR/SSIM/LPIPS computed pixel-wise vs GT after upsampling DaS to GT res; t=0 sk
 <h3>Side-by-side outputs</h3>
 <div class="grid">
   <div class="card gt"><video src="videos/pred_worldtrack/gt.mp4" autoplay loop muted playsinline></video><div class="label">Ground Truth <span class="small">source[3:33] · 30 f @ 30 fps · 960×540</span></div></div>
-  <div class="card das"><video src="videos/pred_worldtrack/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">24 pts · T=30 interp→49 · 720×480 native</span></div></div>
+  <div class="card das"><video src="videos/pred_worldtrack/das.mp4" autoplay loop muted playsinline></video><div class="label">DaS (predicted track) <span class="small">24 pts · T=30 interp→49 · 960×540 (GT res, upsampled from 720×480 native)</span></div></div>
   <div class="card sora"><video src="videos/pred_worldtrack/sora.mp4" autoplay loop muted playsinline></video><div class="label">Sora 2 <span class="small">frame3 + caption + suffix · 960×540</span></div></div>
 </div>
 
