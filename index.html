@@ -162,10 +162,134 @@
 
 <header>
   <h1>DaS vs Sora 2</h1>
-  <p class="subtitle">bench-v3 davis &middot; bear walks to the left &middot; T=82 truncate path &middot; D_target = 2.04 s &middot; GT 854&times;480</p>
+  <p class="subtitle">bench-v3 davis &middot; bear walks to the left &middot; two comparisons: <strong>predicted track</strong> (1.25 s, 30 frames) and <strong>GT track baseline</strong> (2.04 s, 49 frames)</p>
 </header>
 
-<!-- HERO: 3-panel comparison, full width -->
+<!-- ============== SECTION 1: PREDICTED TRACK (NEW) ============== -->
+<h2 style="margin-top:8px;">1. Predicted-track DaS vs Sora 2</h2>
+<p class="subtitle" style="margin: 4px 0 16px;">Predicted 3D tracks from <code>rollout5_davis_test_s0of1</code> (96 points, T=30 from <code>pred_raw_combined</code>) feeding the v3 adapter, then DaS denoise. Sora 2 starts from the same first frame (source frame 3). GT clip is source[3:33].</p>
+
+<!-- HERO: 3-panel comparison_pred -->
+<div class="hero">
+  <video id="hero_pred" autoplay loop muted playsinline preload="metadata"
+         src="videos/pred/comparison.mp4"></video>
+  <div class="hero-labels">
+    <div class="gt">Ground Truth (source[3:33])</div>
+    <div class="das">DaS (predicted-track-conditioned)</div>
+    <div class="sora">Sora 2 (no tracks)</div>
+  </div>
+  <div class="replay"><a href="#" onclick="document.getElementById('hero_pred').play(); return false;">replay</a></div>
+</div>
+
+<h3 style="margin-top:32px;">Metrics</h3>
+<div class="metrics">
+  <table>
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th class="metric">Tem-Con &uarr;</th>
+        <th class="metric">Subj-Cons &uarr;</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-label gt">GT (source[3:33]) <span style="color:var(--muted); font-size:14px; font-weight:400;">(reference)</span></td>
+        <td class="metric"><span class="num">0.9720</span></td>
+        <td class="metric"><span class="num">0.9676</span></td>
+      </tr>
+      <tr>
+        <td class="row-label das">DaS (predicted track)</td>
+        <td class="metric"><span class="num">0.9577</span><span class="delta">&minus;0.0143 vs GT</span></td>
+        <td class="metric"><span class="num" style="color:#fb7185;">0.8521</span><span class="delta">&minus;0.1155 vs GT</span></td>
+      </tr>
+      <tr>
+        <td class="row-label sora">Sora 2 (no tracks)</td>
+        <td class="metric"><span class="num best">0.9477</span><span class="delta">&minus;0.0243 vs GT</span></td>
+        <td class="metric"><span class="num best">0.9611</span><span class="delta">&minus;0.0065 vs GT</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="metrics-help">
+    <strong style="color:#fb7185;">Headline: predicted-track DaS collapses on Subj-Cons (0.852, &minus;0.115 vs GT).</strong>
+    The Molmo2 predictor over-extrapolates the bear's walk: by frame 32 it predicts the bear at world-x &asymp; &minus;1.49,
+    but actual GT is at &minus;0.34 &mdash; a ~1 m drift over 1.25 s. DaS faithfully follows the predicted track, dragging
+    the bear off-frame and stretching its silhouette, which destroys per-frame DINO consistency.
+    Sora 2 is unaffected because it doesn't take the track as input &mdash; it just generates from the prompt + first frame.
+  </div>
+</div>
+
+<h3 style="margin-top:32px;">Side-by-side outputs</h3>
+<div class="grid">
+  <div class="card gt">
+    <video src="videos/pred/gt.mp4" autoplay loop muted playsinline></video>
+    <div class="label">Ground Truth <span class="small">source[3:33] &middot; 30 f @ 24 fps, 854&times;480</span></div>
+  </div>
+  <div class="card das">
+    <video src="videos/pred/das.mp4" autoplay loop muted playsinline></video>
+    <div class="label">DaS (predicted track) <span class="small">96 pts, T=30 interp&rarr;49 &middot; 30 f @ 24 fps, 720&times;480</span></div>
+  </div>
+  <div class="card sora">
+    <video src="videos/pred/sora.mp4" autoplay loop muted playsinline></video>
+    <div class="label">Sora 2 <span class="small">frame3 + caption + suffix &middot; 30 f @ 24 fps, 854&times;480</span></div>
+  </div>
+</div>
+
+<h3 style="margin-top:32px;">Conditioning inputs</h3>
+<div class="grid">
+  <div class="card">
+    <img src="videos/pred/frame3.jpg" alt="source frame 3">
+    <div class="label">Frame 3 <span class="small">DaS &amp; Sora image input (source frame 3, anchor=t0+1)</span></div>
+  </div>
+  <div class="card das">
+    <video src="videos/pred/tracking.mp4" autoplay loop muted playsinline></video>
+    <div class="label">Predicted tracking video <span class="small">96 pts &middot; pred_raw_combined &middot; 49 f @ 39.2 fps slow-mo, 480&times;720, frozen c2w[3]</span></div>
+  </div>
+  <div class="card">
+    <div style="padding:16px; font-size:13px; color:var(--muted); line-height:1.6;">
+      <p style="margin:0 0 10px;"><strong style="color:var(--fg);">Predictor source</strong></p>
+      <p style="margin:0;">
+        <code>rollout5_davis_test_s0of1</code><br>
+        bear · brown_bear · clip 0 · t0=2<br>
+        12 batches &times; 8 points = <strong>96 points</strong><br>
+        <code>pred_raw_combined</code> shape: (8, 30, 3) per batch<br>
+        n_rollouts=5, T_per_rollout=6 &rarr; T_future=30<br>
+        Source frames covered: <strong>[3, 32]</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top:32px;">Run parameters</h3>
+<div class="meta-card" style="margin-top:8px;">
+  <div class="kv">
+    <div class="k">caption</div>      <div class="v">"a brown bear walks to the left"</div>
+    <div class="k">prompt suffix</div><div class="v">". no new objects, people, or artifacts should be added to the scene. no camera large motions are allowed and keep the camera fairly static"</div>
+    <div class="k">T_native</div>     <div class="v">82 (full bear.mp4)</div>
+    <div class="k">F (native fps)</div><div class="v">24</div>
+    <div class="k">target_fps</div>   <div class="v">24</div>
+    <div class="k">D_target</div>     <div class="v">30 / 24 = 1.2500 s</div>
+    <div class="k">n_target</div>     <div class="v">30 frames</div>
+    <div class="k">DaS-pred</div>     <div class="v">demo.py @ 50 steps, frozen c2w[3] from vipe pose, no --repaint</div>
+    <div class="k">Sora-pred</div>    <div class="v">sora-2, size=1280x720, seconds=4 (smallest &ge; 1.25)</div>
+    <div class="k">Sora actual</div>  <div class="v">126 f @ 30 fps, 1280x720</div>
+    <div class="k">postproc Sora</div><div class="v">trim 126&rarr;38, resample 38&rarr;30, resize&rarr;854x480</div>
+    <div class="k">postproc DaS</div> <div class="v">resample 49&rarr;30 (P14 fps-header fix + frame-count match)</div>
+  </div>
+</div>
+
+<h3 style="margin-top:32px;">Caveats</h3>
+<div class="meta-card caveats" style="margin-top:8px;">
+  <p><strong>n = 1.</strong> A single bear clip; no statistical claim.</p>
+  <p><strong>Predictor drift dominates.</strong> The model over-extrapolates motion: at frame 32 it places the bear ~1 m further left than GT. DaS amplifies this drift visually because the track is its conditioning signal.</p>
+  <p><strong>Visibility = all-True</strong> (no per-frame visibility info in the prediction). The rainbow tracking video draws all 96 points at every frame, including ones GT vipe would have marked occluded.</p>
+  <p><strong>Different time window vs Section 2 below.</strong> The predicted-track section uses source frames [3:33] (a sub-window of the bear walk); the GT-track baseline section uses source frames [0:49]. Hero videos are not directly comparable across sections.</p>
+</div>
+
+<!-- ============== SECTION 2: GT TRACK BASELINE (existing) ============== -->
+<h2 style="margin-top:80px; padding-top:32px; border-top:1px solid var(--border);">2. GT-track DaS vs Sora 2 (reference baseline)</h2>
+<p class="subtitle" style="margin: 4px 0 16px;">vipe-tracked 3D tracks (97 points, T=82, truncate path 82&rarr;49) feeding the v3 adapter. Existing 2.04 s comparison; predates the predicted-track section.</p>
+
+<!-- HERO: original 3-panel comparison -->
 <div class="hero">
   <video id="hero" autoplay loop muted playsinline preload="metadata"
          src="videos/comparison.mp4"></video>
@@ -178,7 +302,7 @@
 </div>
 
 <!-- METRICS: big and prominent -->
-<h2>Metrics</h2>
+<h3 style="margin-top:32px;">Metrics</h3>
 <div class="metrics">
   <table>
     <thead>
@@ -221,7 +345,7 @@
 </div>
 
 <!-- Individual videos -->
-<h2>Side-by-side outputs</h2>
+<h3 style="margin-top:32px;">Side-by-side outputs</h3>
 <div class="grid">
   <div class="card gt">
     <video src="videos/gt.mp4" autoplay loop muted playsinline></video>
@@ -238,7 +362,7 @@
 </div>
 
 <!-- Conditioning inputs -->
-<h2>Conditioning inputs</h2>
+<h3 style="margin-top:32px;">Conditioning inputs</h3>
 <div class="grid">
   <div class="card">
     <img src="videos/frame0.jpg" alt="frame 0">
@@ -255,7 +379,7 @@
 </div>
 
 <!-- Run params + caveats -->
-<h2>Run parameters &amp; caveats</h2>
+<h3 style="margin-top:32px;">Run parameters &amp; caveats</h3>
 <div class="meta">
   <div class="meta-card">
     <h3>Pipeline parameters</h3>
