@@ -38,7 +38,7 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
   .hero-labels {
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 12px; margin-top: 14px; padding: 0 4px;
   }
   .hero-labels div {
@@ -49,7 +49,6 @@
   }
   .hero-labels .gt    { color: #e4e4e7; border-top-color: #71717a; }
   .hero-labels .das   { color: #93c5fd; border-top-color: var(--accent); }
-  .hero-labels .das2  { color: #c4b5fd; border-top-color: #a78bfa; }
   .hero-labels .sora  { color: #fde047; border-top-color: var(--warn); }
   .replay {
     text-align: center; margin-top: 8px; font-size: 13px; color: var(--muted);
@@ -106,10 +105,9 @@
 
   /* Secondary: individual videos */
   .grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 12px; margin-top: 16px;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 16px;
   }
-  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
   .card {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -173,8 +171,7 @@
          src="videos/comparison.mp4"></video>
   <div class="hero-labels">
     <div class="gt">Ground Truth</div>
-    <div class="das">DaS (no repaint)</div>
-    <div class="das2">DaS + --repaint (FLUX)</div>
+    <div class="das">DaS (track-conditioned)</div>
     <div class="sora">Sora 2 (no tracks)</div>
   </div>
   <div class="replay"><a href="#" onclick="document.getElementById('hero').play(); return false;">replay</a></div>
@@ -198,19 +195,14 @@
         <td class="metric"><span class="num">0.9626</span></td>
       </tr>
       <tr>
-        <td class="row-label das">DaS <span style="color:var(--muted); font-size:14px; font-weight:400;">(no repaint, legacy suffix)</span></td>
-        <td class="metric"><span class="num">0.9787</span><span class="delta">+0.0002 vs GT</span></td>
+        <td class="row-label das">DaS</td>
+        <td class="metric"><span class="num best">0.9787</span><span class="delta">+0.0002 vs GT</span></td>
         <td class="metric"><span class="num">0.9552</span><span class="delta">&minus;0.0074 vs GT</span></td>
       </tr>
       <tr>
-        <td class="row-label das2">DaS + --repaint <span style="color:var(--muted); font-size:14px; font-weight:400;">(FLUX, new suffix)</span></td>
-        <td class="metric"><span class="num best">0.9791</span><span class="delta">+0.0006 vs GT</span></td>
-        <td class="metric"><span class="num best">0.9669</span><span class="delta">+0.0043 vs GT</span></td>
-      </tr>
-      <tr>
-        <td class="row-label sora">Sora 2 <span style="color:var(--muted); font-size:14px; font-weight:400;">(new suffix)</span></td>
+        <td class="row-label sora">Sora 2</td>
         <td class="metric"><span class="num">0.9740</span><span class="delta">&minus;0.0045 vs GT</span></td>
-        <td class="metric"><span class="num">0.9659</span><span class="delta">+0.0033 vs GT</span></td>
+        <td class="metric"><span class="num best">0.9659</span><span class="delta">+0.0033 vs GT</span></td>
       </tr>
     </tbody>
   </table>
@@ -220,11 +212,11 @@
     <strong>Subj-Cons</strong>: VBench subject_consistency, DINO ViT-B/16 features (default protocol). Higher = more stable subject identity across frames.
     Best <em>generative</em> score per metric highlighted in green. <em>n = 1</em> &mdash; single clip, no statistical claim.
     <br><br>
-    <strong style="color:var(--good);">Headline:</strong> <em>DaS + --repaint</em> wins both metrics among generative models. Both DaS+repaint
-    (0.9669) and Sora (0.9659) <em>exceed</em> GT's Subj-Cons (0.9626) &mdash; the strict camera-lock suffix
-    (<em>"keep the camera fairly static"</em>) and the FLUX repaint together remove the natural parallax/shake
-    that lowers GT's per-frame DINO consistency. The legacy DaS run (no repaint, old "small and smooth movement"
-    suffix) tied DaS+repaint on Tem-Con but lost &minus;0.012 on Subj-Cons.
+    <strong style="color:var(--good);">Split winner.</strong> DaS leads on Tem-Con (matches GT &mdash; the track conditioning keeps frame-to-frame motion smooth);
+    Sora 2 leads on Subj-Cons and <em>exceeds</em> GT (0.9659 vs 0.9626) because the locked-camera prompt
+    (<em>"keep the camera fairly static"</em>) removes the natural parallax/shake that lowers GT's per-frame
+    DINO consistency. With an earlier suffix (<em>"small and smooth movement"</em>) Sora scored only 0.9551 / 0.9573
+    (Subj-Cons / Tem-Con) &mdash; the strict camera lock improved both by &gt;0.01.
   </div>
 </div>
 
@@ -237,15 +229,11 @@
   </div>
   <div class="card das">
     <video src="videos/das.mp4" autoplay loop muted playsinline></video>
-    <div class="label">DaS (no repaint) <span class="small">legacy suffix &middot; 720&times;480 &middot; 49 f @ 24 fps</span></div>
-  </div>
-  <div class="card das2">
-    <video src="videos/das_repaint.mp4" autoplay loop muted playsinline></video>
-    <div class="label">DaS + --repaint <span class="small">FLUX-redrawn frame 0 &middot; new suffix &middot; 720&times;480 &middot; 49 f @ 24 fps</span></div>
+    <div class="label">DaS <span class="small">720&times;480 &rarr; squished &middot; 49 f @ 24 fps</span></div>
   </div>
   <div class="card sora">
     <video src="videos/sora.mp4" autoplay loop muted playsinline></video>
-    <div class="label">Sora 2 <span class="small">new suffix &middot; 1280&times;720 &rarr; 854&times;480 &middot; 49 f @ 24 fps</span></div>
+    <div class="label">Sora 2 <span class="small">1280&times;720 &rarr; 854&times;480 &middot; 49 f @ 24 fps</span></div>
   </div>
 </div>
 
@@ -254,19 +242,15 @@
 <div class="grid">
   <div class="card">
     <img src="videos/frame0.jpg" alt="frame 0">
-    <div class="label">Original frame 0 <span class="small">used as: DaS no-repaint <code>img_cond</code>, Sora <code>input_reference</code></span></div>
+    <div class="label">Frame 0 <span class="small">DaS <code>img_cond_tensor</code> &amp; Sora <code>input_reference</code></span></div>
   </div>
   <div class="card">
     <video src="videos/tracking.mp4" autoplay loop muted playsinline></video>
-    <div class="label">Tracking video <span class="small">DaS+repaint &amp; DaS input &middot; 49 f @ 24 fps, frozen first-frame camera</span></div>
-  </div>
-  <div class="card das2">
-    <img src="videos/das_repaint_frame0.png" alt="FLUX-repainted frame 0">
-    <div class="label">FLUX-repainted frame 0 <span class="small">DaS+repaint <code>img_cond</code> &middot; depth-anything-v2 + FLUX.1-Depth-dev, 720&times;480</span></div>
+    <div class="label">Tracking video <span class="small">DaS-only input &middot; 49 f, frozen first-frame camera projection</span></div>
   </div>
   <div class="card sora">
     <img src="videos/_first_frame_sent_vs_sora.jpg" alt="frame 0 sent to Sora vs Sora's actual frame 0">
-    <div class="label">Sora <code>input_reference</code> vs Sora frame[0] <span class="small">left: what we uploaded &middot; right: Sora's frame 0 (19% pixel-diff &mdash; not strict-frame I2V)</span></div>
+    <div class="label">Sora <code>input_reference</code> vs Sora frame[0] <span class="small">left: uploaded &middot; right: Sora's frame 0 (19% pixel-diff &mdash; soft scene anchor, not strict-frame I2V)</span></div>
   </div>
 </div>
 
@@ -277,16 +261,15 @@
     <h3>Pipeline parameters</h3>
     <div class="kv">
       <div class="k">caption</div>      <div class="v">"a brown bear walks to the left"</div>
-      <div class="k">prompt suffix (new)</div><div class="v">". no new objects, people, or artifacts should be added to the scene. no camera large motions are allowed and keep the camera fairly static"</div>
-      <div class="k">prompt suffix (legacy)</div><div class="v">". no new objects ... no drastic camera movement is allowed and cameras can only have small and smooth movement"</div>
+      <div class="k">DaS suffix (legacy)</div><div class="v">". no new objects ... no drastic camera movement is allowed and cameras can only have small and smooth movement"</div>
+      <div class="k">Sora suffix (new)</div><div class="v">". no new objects, people, or artifacts should be added to the scene. no camera large motions are allowed and keep the camera fairly static"</div>
       <div class="k">T_native</div>     <div class="v">82</div>
       <div class="k">F (native fps)</div><div class="v">24</div>
       <div class="k">target_fps</div>   <div class="v">24</div>
       <div class="k">D_target</div>     <div class="v">49 / 24 = 2.0417 s</div>
       <div class="k">n_target</div>     <div class="v">49 frames</div>
-      <div class="k">DaS (no repaint)</div><div class="v">demo.py @ 50 steps, legacy suffix, img_cond = literal frame0.jpg</div>
-      <div class="k">DaS + --repaint</div><div class="v">demo.py @ 50 steps, new suffix, --repaint true → depth-anything-v2 + FLUX.1-Depth-dev (30 steps, gs=7.5) → img_cond = repainted 480&times;720 png</div>
-      <div class="k">Sora</div>         <div class="v">sora-2, new suffix, size=1280x720, seconds=4 (smallest &ge; D_target)</div>
+      <div class="k">DaS</div>          <div class="v">demo.py @ 50 inference steps, frozen c2w[0], no --repaint (img_cond = literal frame0.jpg)</div>
+      <div class="k">Sora</div>         <div class="v">sora-2, size=1280x720, seconds=4 (smallest &ge; D_target)</div>
       <div class="k">Sora actual</div>  <div class="v">126 f @ 30 fps, 1280x720 (no I2V auto-adapt for landscape input)</div>
       <div class="k">postproc Sora</div><div class="v">trim 126&rarr;61, resample 61&rarr;49, resize&rarr;854x480</div>
       <div class="k">postproc DaS</div> <div class="v">resample 49&rarr;49 (fps-header only fix per P14)</div>
@@ -295,8 +278,8 @@
   <div class="meta-card caveats">
     <h3>Caveats</h3>
     <p><strong>n = 1.</strong> A single bear clip; no statistical claim. The metric gaps shown are illustrative, not statistically significant.</p>
-    <p><strong>Sora is not strict-frame I2V.</strong> Sora's actual frame[0] differs from the uploaded <code>input_reference</code> by 19% pixel-wise &mdash; the bear is in a different pose. <code>input_reference</code> is a soft scene/style anchor per the OpenAI cookbook ("anchor for the first frame"), not a literal first frame. DaS's <code>--repaint</code> mode mirrors this behaviour by regenerating frame 0 via depth-anything-v2 + FLUX.1-Depth-dev.</p>
-    <p><strong>Prompt iteration matters.</strong> The legacy suffix (<em>"only small and smooth movement"</em>) let Sora dolly; the new suffix (<em>"keep the camera fairly static"</em>) locks the camera, raising Sora's Tem-Con +0.017 and Subj-Cons +0.011. DaS+repaint also uses the new suffix.</p>
+    <p><strong>Sora is not strict-frame I2V.</strong> Sora's actual frame[0] differs from the uploaded <code>input_reference</code> by 19% pixel-wise &mdash; the bear is in a different pose. <code>input_reference</code> is a soft scene/style anchor per the OpenAI cookbook ("anchor for the first frame"), not a literal first frame. DaS's <code>demo.py --repaint true</code> flag does similar regeneration via FLUX.1-Depth-dev; we tested it and the redrawn frame felt too synthetic, so we stayed with the literal-frame DaS path here.</p>
+    <p><strong>Prompt suffix asymmetry.</strong> DaS uses the original <em>"only small and smooth movement"</em> suffix (the existing 2026-04-28 smoke output); Sora was rerun with the stricter <em>"keep the camera fairly static"</em> suffix because Sora interpreted the original wording as license to dolly. With the original suffix Sora scored 0.9551 / 0.9573 (Subj-Cons / Tem-Con); the strict camera lock improved both by &gt;0.01.</p>
     <p><strong>Sora pacing.</strong> Sora generated 4 s of bear walking; we trimmed to the first 2.04 s (<code>round(D_target &times; sora_fps)</code>). The trimmed action reflects Sora's pacing across the full 4 s &mdash; if motion is back-loaded we capture only setup motion. Eyeball the hero clip to confirm.</p>
     <p><strong>Sora 2 is 30 fps</strong>, not 24 as some docs claim. We probe the actual fps from the downloaded mp4 via cv2 and use it for the trim count.</p>
   </div>
@@ -305,7 +288,7 @@
 <footer>
   bench-v3 pipeline reference: <code>tmp/docs/pipeline_reference.md</code> &middot;
   outputs root: <code>outputs/bench_noobj/v3/</code> &middot;
-  smoke runs: Sora 2026-04-30 23:31 UTC, DaS+repaint 2026-05-01 00:12 UTC
+  smoke runs: DaS 2026-04-28, Sora 2026-04-30 23:31 UTC
 </footer>
 
 </div>
