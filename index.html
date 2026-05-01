@@ -76,6 +76,9 @@
   code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
   .ex-section { padding-top: 32px; border-top: 1px solid var(--border); margin-top: 56px; }
   .ex-section:first-of-type { border-top: none; padding-top: 0; margin-top: 24px; }
+  /* Force grid cards to share a row height so cards with different native aspects
+     line up; the videos themselves stay full-width object-fit: cover. */
+  .grid .card video, .grid .card img { aspect-ratio: 16 / 9; object-fit: cover; }
 </style>
 </head>
 <body>
@@ -327,5 +330,38 @@ PSNR/SSIM/LPIPS computed pixel-wise vs GT after upsampling DaS to GT res; t=0 sk
 </footer>
 
 </div>
+
+<script>
+// Many videos (15+) on one page hit browser autoplay/decode throttles, especially on
+// HOT3D's 1408x1408 panels. Use IntersectionObserver so each video plays only while
+// in the viewport, freeing decode contexts for off-screen ones.
+(function () {
+  const videos = document.querySelectorAll('video');
+  videos.forEach(v => {
+    v.muted = true;
+    v.playsInline = true;
+    v.loop = true;
+    v.preload = 'metadata';
+    v.removeAttribute('autoplay');
+    v.pause();
+  });
+  if (!('IntersectionObserver' in window)) {
+    // Fallback: just try to play all
+    videos.forEach(v => v.play().catch(() => {}));
+    return;
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.play().catch(() => {});
+      } else {
+        e.target.pause();
+      }
+    });
+  }, { rootMargin: '100px', threshold: 0.1 });
+  videos.forEach(v => io.observe(v));
+})();
+</script>
+
 </body>
 </html>
